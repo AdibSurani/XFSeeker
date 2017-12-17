@@ -53,7 +53,7 @@ namespace XFSeeker
             }
             else if (type == "xfsc")
             {
-
+                var root= (XFSC.rCharacter)ReadXFS(File.OpenRead(filename));
             }
             else if (type == "prp")
             {
