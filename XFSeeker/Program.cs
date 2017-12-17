@@ -21,10 +21,15 @@ namespace XFSeeker
 
         static object ReadXFS(Stream stream)
         {
-            // Get all types in assembly and translate them to hashes
-            var dicTypes = Assembly.GetExecutingAssembly().GetTypes().ToDictionary(
-                t => new BitArray(t.FullName.Split('.').Last().Replace("+", "::").Select(x => (byte)x).ToArray())
-                .Cast<bool>().Aggregate(~0u, (h, i) => h / 2 ^ (i ^ h % 2 != 0 ? 0xEDB88320 : 0)) * 2 / 2);
+            // This is just the standard crc32 algorithm
+            uint Crc32(string s) => ~new BitArray(s.Select(x => (byte)x).ToArray()).Cast<bool>()
+                                    .Aggregate(~0u, (h, i) => h / 2 ^ (i ^ h % 2 != 0 ? 0xEDB88320 : 0));
+            // Get all types in assembly and calculate their crc32-based hashes
+            var dicTypes = (from type in Assembly.GetExecutingAssembly().GetTypes()
+                            let classname = type.FullName.Split('.').Last().Replace("+", "::") // C# -> C++
+                            let hash = ~Crc32(classname) & 0x7FFFFFFF
+                            select (hash, type))
+                            .ToDictionary(pair => pair.hash, pair => pair.type);
 
             using (var br = new BinaryReader(stream))
             {
