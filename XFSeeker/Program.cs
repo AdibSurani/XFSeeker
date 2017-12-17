@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -9,14 +10,55 @@ namespace XFSeeker
 {
     class Program
     {
+        static List<string> types = new List<string> { "fsm", "xfsc", "prp" };
+
+        static void PrintUsage()
+        {
+            Console.WriteLine("Usage: XFSeeker.exe \"<type>\" <path>\n\nPossible types:\n   fms\n   xfsc\n  prp");
+        }
+
         static void Main(string[] args)
         {
-            var filename = args.DefaultIfEmpty("chr001.fsm").Last();
-            var root = (FSM.rAIFSM)ReadXFS(File.OpenRead(filename));
+            if (args.Count() != 2)
+            {
+                PrintUsage();
+                Environment.Exit(0);
+            }
+            else
+            {
+                if (!types.Contains(args[0]))
+                {
+                    Console.WriteLine("Unsupported XFS type!\n");
+                    PrintUsage();
+                    Environment.Exit(0);
+                }
 
-            // Do something arbitrary, such as printing out all conditions
-            foreach (var cond in root.mpConditionTree.mpTreeList)
-                Console.WriteLine($"[{cond.mName.mId}] {cond.mpRootNode}");
+                if (!File.Exists(args[1]))
+                {
+                    Console.WriteLine("File not found!");
+                    Environment.Exit(0);
+                }
+            }
+
+            var type = args[0];
+            var filename = args[1];
+
+            if (type == "fsm")
+            {
+                var root = (FSM.rAIFSM)ReadXFS(File.OpenRead(filename));
+
+                // Do something arbitrary, such as printing out all conditions
+                foreach (var cond in root.mpConditionTree.mpTreeList)
+                    Console.WriteLine($"[{cond.mName.mId}] {cond.mpRootNode}");
+            }
+            else if (type == "xfsc")
+            {
+                var root= (XFSC.rCharacter)ReadXFS(File.OpenRead(filename));
+            }
+            else if (type == "prp")
+            {
+
+            }
         }
 
         static object ReadXFS(Stream stream)
@@ -95,6 +137,17 @@ namespace XFSeeker
                     return item;
                 }
 
+                //helper for reading a TypePath
+                object ReadTypePath()
+                {
+                    var stringCount = br.ReadByte() - 1;
+                    var typeName = br.ReadString();
+                    var pathList = (from i in Range(0, stringCount)
+                                    select br.ReadString());
+
+                    return (typeName, pathList);
+                }
+
                 // helper for reading an object by type
                 object ReadObject(int type)
                 {
@@ -108,7 +161,9 @@ namespace XFSeeker
                         case 10: return br.ReadInt32();
                         case 12: return br.ReadSingle();
                         case 14: return ReadString();
-                        case 20: return (br.ReadInt32(), br.ReadInt32(), br.ReadInt32(), br.ReadInt32());
+                        case 20: return (br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+                        case 21: return (br.ReadInt32(), br.ReadInt32(), br.ReadInt32(), br.ReadInt32());
+                        case 0x80: return ReadTypePath();
                         default: throw new NotSupportedException($"Unknown type {type}");
                     }
                 }
