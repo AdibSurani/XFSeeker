@@ -108,7 +108,8 @@ namespace XFSeeker
                         case 10: return br.ReadInt32();
                         case 12: return br.ReadSingle();
                         case 14: return ReadString();
-                        case 20: return (br.ReadInt32(), br.ReadInt32(), br.ReadInt32(), br.ReadInt32());
+                        case 20: return (br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+                        case 21: return (br.ReadInt32(), br.ReadInt32(), br.ReadInt32(), br.ReadInt32());
                         default: throw new NotSupportedException($"Unknown type {type}");
                     }
                 }
