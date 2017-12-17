@@ -137,6 +137,17 @@ namespace XFSeeker
                     return item;
                 }
 
+                //helper for reading a TypePath
+                object ReadTypePath()
+                {
+                    var stringCount = br.ReadByte() - 1;
+                    var typeName = br.ReadString();
+                    var pathList = (from i in Range(0, stringCount)
+                                    select br.ReadString());
+
+                    return (typeName, pathList);
+                }
+
                 // helper for reading an object by type
                 object ReadObject(int type)
                 {
@@ -152,6 +163,7 @@ namespace XFSeeker
                         case 14: return ReadString();
                         case 20: return (br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
                         case 21: return (br.ReadInt32(), br.ReadInt32(), br.ReadInt32(), br.ReadInt32());
+                        case 0x80: return ReadTypePath();
                         default: throw new NotSupportedException($"Unknown type {type}");
                     }
                 }
