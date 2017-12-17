@@ -5,6 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using static System.Linq.Enumerable;
+using System.Xml.Serialization;
+using System.Xml;
+using System.Text;
 
 namespace XFSeeker
 {
@@ -53,7 +56,8 @@ namespace XFSeeker
             }
             else if (type == "xfsc")
             {
-                var root= (XFSC.rCharacter)ReadXFS(File.OpenRead(filename));
+                var root = (XFSC.rCharacter)ReadXFS(File.OpenRead(filename));
+                File.WriteAllText(filename + ".xml", ToXmlString<XFSC.rCharacter>(root));
             }
             else if (type == "prp")
             {
@@ -168,6 +172,26 @@ namespace XFSeeker
                     }
                 }
                 #endregion
+            }
+        }
+
+        public static string ToXmlString<T>(object obj)
+        {
+            var ns = new XmlSerializerNamespaces();
+            ns.Add("", "");
+            var xmlSettings = new XmlWriterSettings
+            {
+                Encoding = Encoding.UTF8,
+                Indent = true,
+                NewLineOnAttributes = false,
+                IndentChars = "\t",
+                CheckCharacters = false,
+                OmitXmlDeclaration = true
+            };
+            using (var sw = new StringWriter())
+            {
+                new XmlSerializer(typeof(T)).Serialize(XmlWriter.Create(sw, xmlSettings), obj, ns);
+                return sw.ToString();
             }
         }
     }
