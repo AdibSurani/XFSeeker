@@ -57,7 +57,13 @@ namespace XFSeeker
             else if (type == "xfsc")
             {
                 var root = (XFSC.rCharacter)ReadXFS(File.OpenRead(filename));
-                File.WriteAllText(filename + ".xml", ToXmlString<XFSC.rCharacter>(root));
+
+                // writing to xml will not work directly this way
+                //File.WriteAllText(filename + ".xml", ToXmlString<XFSC.rCharacter>(root));
+
+                // Do something arbitrary, such as printing out all rotConstraints
+                foreach (var item in root.mRotConstraints)
+                    Console.WriteLine($"[{item.mBaseNo}, {item.mNo}] {item.mRotRatio}");
             }
             else if (type == "prp")
             {
@@ -126,7 +132,7 @@ namespace XFSeeker
                     foreach (var (fieldInfo, type) in str.members)
                     {
                         int lstCount = br.ReadInt32();
-                        if (type < 0) // probably means it has to be a list
+                        if ((type & 0xFF00) != 0) // probably means it has to be a list? needs further investigation
                         {
                             var lst = (IList)Activator.CreateInstance(fieldInfo.FieldType);
                             for (int i = 0; i < lstCount; i++)
@@ -145,11 +151,10 @@ namespace XFSeeker
                 object ReadTypePath()
                 {
                     var stringCount = br.ReadByte() - 1;
-                    var typeName = br.ReadString();
+                    var typeName = ReadString();
                     var pathList = (from i in Range(0, stringCount)
-                                    select br.ReadString());
-
-                    return (typeName, pathList);
+                                    select ReadString());
+                    return new XFSC.TypePath { typeName = typeName, paths = pathList.ToList() };
                 }
 
                 // helper for reading an object by type
@@ -160,7 +165,7 @@ namespace XFSeeker
                         case 1: // fallthrough: ReadStruct() == ReadClass()
                         case 2: return ReadClass();
                         case 3: return br.ReadByte() != 0;
-                        case 4: return br.ReadByte();
+                        case 4: return br.ReadSByte();
                         case 6: return br.ReadUInt32();
                         case 10: return br.ReadInt32();
                         case 12: return br.ReadSingle();

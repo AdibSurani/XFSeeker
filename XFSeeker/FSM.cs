@@ -31,7 +31,7 @@ namespace XFSeeker.FSM
         public List<cAIFSMLink> mpLinkList;
         public List<cAIFSMNodeProcess> mpProcessList;
         public uint mUIPos;
-        public byte mColorType;
+        public sbyte mColorType;
         public uint mSetting;
         public uint mUserAttribute;
         public bool mExistConditionTrainsitionFromAll;
@@ -64,7 +64,7 @@ namespace XFSeeker.FSM
             public int mBlendMotionNo;
             public int mBlendMotionNo2;
             public float mAngle;
-            public (int x, int y, int z, int w) mSubOffset;
+            public (float x, float y, float z, float w) mSubOffset;
             public float mFrame;
         }
 
