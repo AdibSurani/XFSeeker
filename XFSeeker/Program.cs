@@ -13,11 +13,11 @@ namespace XFSeeker
 {
     class Program
     {
-        static List<string> types = new List<string> { "fsm", "xfsc", "prp" };
+        static List<string> types = new List<string> { "fsm", "xfsc" };
 
         static void PrintUsage()
         {
-            Console.WriteLine("Usage: XFSeeker.exe \"<type>\" <path>\n\nPossible types:\n   fms\n   xfsc\n  prp");
+            Console.WriteLine("Usage: XFSeeker.exe \"<type>\" <path>\n\nPossible types:\n   fms\n   xfsc");
         }
 
         static void Main(string[] args)
@@ -64,10 +64,6 @@ namespace XFSeeker
                 // Do something arbitrary, such as printing out all rotConstraints
                 foreach (var item in root.mRotConstraints)
                     Console.WriteLine($"[{item.mBaseNo}, {item.mNo}] {item.mRotRatio}");
-            }
-            else if (type == "prp")
-            {
-
             }
         }
 
